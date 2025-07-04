@@ -1,0 +1,3 @@
+nc: 55
+names: ['CC', 'CV', 'Date-Field', 'Event-Field', 'Event-Field-2', 
+'GCP0_BL', 'GCP0_CC', 'GCP0_CO', 'GCP0_EV', 'GCP0_EVS', 'GCP0_GH', 'GCP0_GL', 'GCP0_M', 'GCP0_SH', 'GCP0_TZ', 'GCP1_BL', 'GCP1_CC', 'GCP1_CO', 'GCP1_EV', 'GCP1_EVS', 'GCP1_GH', 'GCP1_GL', 'GCP1_M', 'GCP1_SH', 'GCP1_TZ', 'GCP2_BL', 'GCP2_CC', 'GCP2_CO', 'GCP2_EV', 'GCP2_EVS', 'GCP2_GH', 'GCP2_GL', 'GCP2_M', 'GCP2_SH', 'GCP2_TZ', 'GCP3_BL', 'GCP3_CC', 'GCP3_CO', 'GCP3_EV', 'GCP3_EVS', 'GCP3_GH', 'GCP3_GL', 'GCP3_M', 'GCP3_SH', 'GCP3_TZ', 'IC', 'IV', 'Rain-Field', 'Shaded', 'TC', 'TV', 'Temperature-Field', 'Title', 'Total', 'map']
