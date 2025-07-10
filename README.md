@@ -1,32 +1,23 @@
-### Introduction
+# Mapping Homelessness in San Diego Downtown
 
-The Downtown San Diego Partnership (DSDP) conducts a monthly count of 10 regions in
-San Diego downtown. The process is manual – from data collection to data tallying and tabulation.
-While the paper maps have the geo spatial information of the counts, it is not digitized and mapped
-on digital maps.
+This project converts San Diego Downtown Homeless Survey data into GIS format. Since 2015, Downtown San Diego Partnership [(DSDP)](https://downtownsandiego.org/clean-and-safe/unhoused-care/) has been conducting an observational count of the unsheltered homeless in Downtown San Diego on paper maps. DSDP manually annotates te counts, tallies the results and uploads pdf of the scans of the paper maps with tabulated data on their website. This project uses computer vision and deep learning methods to read count information from paper maps, geotag and map the counts on a GIS map for each month for all the 10 regions of downtown San Diego for further visualization and analysis.
 
-This project aims to use computer vision and machine learning methods to develop a
-solution to generate GIS data from these paper maps for further visualization and analysis.
+## 1. Raw Data
 
-### Raw Data
-
-```
-Template Maps:
-```
+### a) Template Maps
 The Downtown San Diego Partnership provided the 10 template map images that they
 use for counting. These are essentially empty maps that they print and use for the count every
-month. These maps span different regions of downtown that DSSSDP serves – East Village
+month. These maps span different regions of downtown that DSDP serves – East Village
 (EV), East Village South (EVS), Sherman Heights (SH), Golden Hills (GH), Gaslamp (GL),
 Barrio Logan (BL), Cortez (TZ), City Center (CC) and Columbia (CO).
 
-```
-Data Maps:
-```
+<img src="./Images/Picture1.jpg" alt="Template Maps" /> 
 
+### b) Data Maps
 I downloaded monthly count map data pdfs from 2018 to Jan 2025 from the DSDP
-website and converted into jpgs. Here is a sample from the 2024 Dec data collection
+website and converted into jpgs. Here is a sample from the 2024 Dec data collection - 10 for each month.
 
-# Figure 1 : Sample Data Maps – 10 for each month. Source: Downtown San Diego Partnership
+<img src="./Images/Picture2.jpg" alt="Sample Data Maps" /> 
 
 DSDP capture different count information using symbols and digits. Below images show
 samples of the count data. They are zoomed out significantly to be visible. Count information
@@ -38,58 +29,42 @@ shown with a rectangle symbol with count of vehciles included in the symbol. Sim
 shown with triangular symbols and have count of tents included in the symbol. Figures below
 show some samples.
 
+<img src="./Images/Picture3.png" height = "120" alt="Zoomed Sample Single Digit count data from maps" /> <img src="./Images/Picture4.png" height = "120" alt=" Zoomed Sample Double Digit count data from maps" /> <img src="./Images/Picture5.png" height = "120" alt="Zoomed Sample Vehcile count data from maps" /> <img src="./Images/Picture6.png" height = "120" alt="Zoomed Sample Tent count data from maps" /> 
 
-_Figure 2 : Zoomed Sample Single Digit count data from maps_
-
-_Figure 3 : Zoomed Sample Double Digit count data from maps_
-
-```
-Figure 4 : Zoomed Sample Vehicle Count data from maps
-```
-
-```
-Figure 5 : Zoomed Sample Tent count data from maps
-```
-### Preparing Template Maps – one time process.
-
+## 2. Preparing Template Maps – one time process.
+ 
 We use template maps to identify key information present on the maps – legends, symbols,
 tallied data, map region, 4 Ground Control Points (GCPs) in Image Pixel Coordinates (IPC),
 Information Outside Map Neat Lines (IOMNL). I annotated 10 Template Maps (TMs) in
 Roboflow with Bounding Boxes (BBs) for Map Title, 4 GCPs, IOMNL, Polygons for map,
-Polygons for shade map region. A sample annotated map is shown below.
+Polygons for shade map region. A sample annotated map is shown below. It shows Template with Neat Lines (Purple), 
+IOMNLs (Cyan), GCPs (4 intersections in red green, blue and orange) annotated
+manually in roboflow
 
+<img src="./Images/Picture7.jpg" alt="Template Example" /> 
 
-## Figure 7 : Steps in matching and aligning data maps with template maps
+Thus from roboflow I get the following 55 identifying classes corresponding to the 10 template maps. These class identifiers are stored in a yaml file for use in the program to process the data maps.
 
-_Figure 6 : Template with Neat Lines (Purple), IOMNLs (Cyan), GCPs (4 intersections in red green, blue and orange) annotated
-manually in roboflow_
+    nc: 55
+    names: ['CC', 'CV', 'Date-Field', 'Event-Field', 'Event-Field-2',
+    'GCP0_BL', 'GCP0_CC', 'GCP0_CO', 'GCP0_EV', 'GCP0_EVS', 'GCP0_GH',
+    'GCP0_GL', 'GCP0_M', 'GCP0_SH', 'GCP0_TZ', 'GCP1_BL', 'GCP1_CC',
+    'GCP1_CO', 'GCP1_EV', 'GCP1_EVS', 'GCP1_GH', 'GCP1_GL', 'GCP1_M',
+    'GCP1_SH', 'GCP1_TZ', 'GCP2_BL', 'GCP2_CC', 'GCP2_CO', 'GCP2_EV',
+    'GCP2_EVS', 'GCP2_GH', 'GCP2_GL', 'GCP2_M', 'GCP2_SH', 'GCP2_TZ',
+    'GCP3_BL', 'GCP3_CC', 'GCP3_CO', 'GCP3_EV', 'GCP3_EVS', 'GCP3_GH',
+    'GCP3_GL', 'GCP3_M', 'GCP3_SH', 'GCP3_TZ', 'IC', 'IV', 'Rain-Field',
+    'Shaded', 'TC', 'TV', 'Temperature-Field', 'Title', 'Total', 'map']
 
-```
-Thus from roboflow I get the following 55 identifying classes corresponding to the 10
-```
-## template maps. These class identifiers are stores in a yaml file for use in the program.
-
-nc: 55
-names: ['CC', 'CV', 'Date-Field', 'Event-Field', 'Event-Field-2',
-'GCP0_BL', 'GCP0_CC', 'GCP0_CO', 'GCP0_EV', 'GCP0_EVS', 'GCP0_GH',
-'GCP0_GL', 'GCP0_M', 'GCP0_SH', 'GCP0_TZ', 'GCP1_BL', 'GCP1_CC',
-'GCP1_CO', 'GCP1_EV', 'GCP1_EVS', 'GCP1_GH', 'GCP1_GL', 'GCP1_M',
-'GCP1_SH', 'GCP1_TZ', 'GCP2_BL', 'GCP2_CC', 'GCP2_CO', 'GCP2_EV',
-'GCP2_EVS', 'GCP2_GH', 'GCP2_GL', 'GCP2_M', 'GCP2_SH', 'GCP2_TZ',
-'GCP3_BL', 'GCP3_CC', 'GCP3_CO', 'GCP3_EV', 'GCP3_EVS', 'GCP3_GH',
-'GCP3_GL', 'GCP3_M', 'GCP3_SH', 'GCP3_TZ', 'IC', 'IV', 'Rain-Field',
-'Shaded', 'TC', 'TV', 'Temperature-Field', 'Title', 'Total', 'map']
-
-nC = number of classes
-‘CC’, ‘CO’,’EV’,’EVS’, ‘TZ’, ‘BL’,’M’,’GL’,’GH’, ‘SH’ correspond to the 10 regions – City
-Center, Columbia, East Village, East Village South, Cortez, Barrio Logan, Marina, Gaslamp,
-Golden Hills, and Sherrman Heights respectively. There are 4 GCPs (GCP0-3) for each region.
-Rest of the items correspond to different fields within the map.
-
-
-For the Cortez template map, roboflow also generated the bounding box or polygon pixel
+    nC = number of classes
+    ‘CC’, ‘CO’,’EV’,’EVS’, ‘TZ’, ‘BL’,’M’,’GL’,’GH’, ‘SH’ correspond to the 10 regions – City Center, Columbia, East 
+    Village, East Village South, Cortez, Barrio Logan, Marina, Gaslamp,Golden Hills, and Sherrman Heights respectively. 
+    There are 4 GCPs (GCP0-3) for each region. Rest of the items correspond to different fields within the map
+For the each template map, roboflow also generated the bounding box or polygon pixel
 coordinates for each of the classes pertinent to the map. This is stored in a text file. The first
 number is the class from the list above followed by the normalized pixel y,x coordinates.
+
+<img src="./Images/Picture8.png" alt="Cortez txt file" /> 
 
 The 4 GCPs are easily identifiable intersections on the map. I looked up their
 corresponding latitude longitude coordinates in Google maps and created a xls file (Link to
@@ -99,108 +74,81 @@ the maximum area covered by the map. In the table Geo corresponds to one of 10 g
 GCP id 0- 3 corresponds to 4 intersections on the map. -1 and 4 are used to identify the corners of
 the rectangle defining the region. gcpY and gcpX are the latitude and longitude respectively.
 
-```
-Geo gcp_id gcp_address gcpY^ gcpX^
-TZ - 1 5 - Ramp 32.72345280256031^ - 117.^
-TZ 0 1st-Cedar 32.722008227696165^ - 117.^
-TZ 1 9th-Cedar 32.72200934455702^ - 117.^
-TZ 2 9th-Ash 32.71991000872872^ - 117.^
-TZ 3 1st-Ash 32.71987664466721^ - 117.^
-TZ 4 10th-A 32.71888013779527 - 117.
-```
+<img src="./Images/PictureXLS.png" height = 120 alt="LatestGCP xls file" /> 
 
-### Machine Learning models for count data
+## 3.	Aligning Data Maps and Geo Tagging
 
+Below steps outline the algorithm for aligning data map to template map images:
 ```
+1. Resize Data Maps to Same Size As Template Maps 768x1024 or 1024x768 pixels
+2. Convert Template Maps and Data Maps into Gray Images
+3. Using SIFT Find Key Point and Descriptors for the Template and Data Map
+4. Using a Brute Force Matcher find Descriptor Matches using KNNs (K=2)
+5. Using the ratio test for distance, select a set of good Key Point matches between the Template and Data Map
+6. Find the Homography Matrix, H, for the Matching Key Points for the Matching Template Map and Data Map using a RANSAC
+    Algorithm
+7. Using H Matrix transform the Data Map to Align it to the Matching Template Map
+```
+Images below illustrate the keypoint correspondences (1st set of images) and alignment (2nd set showing template and aligned data maps):
+
+<img src="./Images/MatchingPoints.png" height = 210 alt="Template Data Point Correspondences" />  <img src="./Images/Aligned.jpg" alt="Aligned Data Map" /> 
+
+Once we have an aligned data map, we can find the geo control points in Image Pixel Coordinates as shown in the figure below (same pixel coordinates)
+
+<img src="./Images/TemplateSections.jpg" height = 245 alt="Template Sections" />  <img src="./Images/DataSections.jpg" height = 245 alt="Data Sections" /> 
+
+Then using the corresponding GCPs in GIS Map Coordinates, we find transformation Matrix A to map Image Pixel Coordinates into GIS Map Coordinates. Using the matrix A we can map pixel coordinates onto a GIS Map as illustrated in the figure below:
+
+<img src="./Images/GCPsTZ.jpg" height = 300 alt="Coordinate TXFM" />  <img src="./Images/DataTZ.jpg" height = 300 alt="Coordinate TXFM" /> 
+
+##4. Machine Learning models for count data
+
 I have trained six multistage machine learning models in roboflow to read the count data and classify
 it as Individual, Tent and Vehicle. Below steps, flowchart describes what the model do, what they were
 trained on and the performance metrics of each of the models:
 ```
 1. model_id: count-annotations-4/3 → Object detection (hand marked count data)
-This model find bounding boxes for all of the hand marked counts – Individual Single Digit (SD),
-Individual Double Digit (DD), Single Tent (ST), Multi Tent (MT). Single Vehicle (SV), Multi Vehicle
-(MV). This stage returns the center coordinates of bounding box and its width and height (cx,cy,wx,wy)
+This model find bounding boxes for all of the hand marked counts – Individual Single Digit (SD), Individual Double Digit (DD),
+Single Tent (ST), Multi Tent (MT). Single Vehicle (SV), Multi Vehicle (MV). This stage returns the center coordinates of bounding
+box and its width and height (cx,cy,wx,wy)
+
 2. model_id: digitclassification/2 → Single Digit Classification
-This model is a digit classification model that identifies the image within the Single Digit bounding box
-as 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+This model is a digit classification model that identifies the image within the Single Digit bounding box as
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+
 3. model_id : doubledigit/2 → Object detection (Digits)
-A Double Digit Object Detection Model processes the image within the Double Digit bounding box and
-produces bounding boxes for the Tens and Units digits. A digit classification model then classifies the
-Tens an Unit digit images to 0-9 and the tens and units digits are combined to produce the count.
+A Double Digit Object Detection Model processes the image within the Double Digit bounding box and produces bounding boxes for the
+Tens and Units digits. A digit classification model then classifies the Tens an Unit digit images to 0-9 and the tens and units
+digits are combined to produce the count.
+
 4. model_id: tent-classification/1 classifies the Tent bounding in three classes – Single Tent, Single
-Digit Tent, Single Tent and Multi Digit Tent. The Single Tent bounding box is just a tent, while
-others have digits marked in them.
+Digit Tent, Single Tent and Multi Digit Tent. The Single Tent bounding box is just a tent, while others have digits marked in them.
+
 5. tentdigits-sd/1 gives bounding box for the digit within the tent symbol
+
 6. dd-tdd/1 gives bounding boxes for the Unit and Tens digit within the tent symbol
 
 ```
 Below tables provide more details on the input, output, type of models, training data used and
 performance metric of each of the models.
-Sr
-No.
-```
-```
-Model ID Type Model Type mAP@50 Precision Recall Accuracy # Training
-Items
-```
-1 count-annotations-4/3 Object
-Detection
 
-#### YOLOV12-X 92.4% 88.7% 88.6% N/A 12664
 
-2 digitclassification/2 Classification ViT N/A N/A N/A 97.2% 6325
+| S.No. | Model ID | Type | Model Type | mAP50    | Precision    | Recall    | Accuracy    | Training Items    |
+|:-----:|:---------:|:-----:|:-------------:|:---------:|:------------:|:---------:|:-----------:|:-------------------:|
+| 1.    |count-annotations-4/3| Object Detection|YOLOV12-X| 92.4%| 88.7% |88.6%| N/A| 12664|
+| 2.    |digitclassification/2| Classification |ViT| N/A| N/A| N/A| 97.2%| 6325|
+| 3.    |dd-tdd/1| Object Detection|YOLOV12-X| 96.1%| 93.5%| 89.0%| N/A| 686|
+| 4.    |tentdigits-sd/1| Object Detection|YOLOV12-X |92.7%| 89.9%| 88.9%| N/A |1104|
+| 5.    |oubledigit/2| Object Detection|YOLOV12-X| 94.7%| 91.3%| 92.8%| N/A| 348|
+| 6.    |tent-classification/1| Classification| ViT| N/A| N/A| N/A| 91.4%| 3020|
 
-3 dd-tdd/1 Object
-Detection
 
-#### YOLOV12-X 96.1% 93.5% 89.0% N/A 686
+|S.No.| Model ID| Input |Output| Sample Input and Annotations|
+|:-----:|:---------:|:-----:|:-------------:|:---------:|
+|1.|count-annotations-4/3|Image of Data Map of A Region| Bounding Boxes of each count - Individual Single Digit (SD), Individual Double Digit (DD), Single Tent (ST), Multi Tent (MT). Single Vehicle (SV), Multi Vehicle (MV).| <img src="./Images/Picture9.png" alt="Map Annotations" />|
+|2.| digitclassification/2 | Image of A Single Digit| Digit Value 0,1,2,3,4,5,6,7,8,9|<img src="./Images/Picture10.png" height = 100 alt="SD1" /><img src="./Images/Picture11.png" height = 100 alt="SD1" />|
+|3.| dd-tdd/1| Image of A Double-Digit Tent|2 Bounding Boxes of Digits (Ten’s and Unit’s)|<img src="./Images/Picture12.png" height = 100 alt="SD1" />|
 
-4 tentdigits-sd/1 Object
-Detection
-
-#### YOLOV12-X 92.7% 89.9% 88.9% N/A 1104
-
-5 doubledigit/2 Object
-Detection
-
-#### YOLOV12-X 94.7% 91.3% 92.8% N/A 348
-
-6 tent-classification/1 Classification ViT N/A N/A N/A 91.4% 3020
-
-```
-Table 1 : Machine Learning models and performance metrics
-```
-
-Sr. No. Model ID Input Output Sample Input and Annotations
-
-1 count-annotations-4/3 (^) Image of
-Data
-Map of
-A
-Region
-Bounding Boxes of
-each count -
-Individual Single
-Digit (SD),
-Individual Double
-Digit (DD), Single
-Tent (ST), Multi
-Tent (MT). Single
-Vehicle (SV), Multi
-Vehicle (MV).
-2 digitclassification/2 Image of
-A Single
-Digit
-Digit Value
-0,1,2,3,4,5,6,7,8,
-3 dd-tdd/1 (^) Image of
-A
-Double-
-Digit
-Tent
-2 Bounding Boxes
-of Digits (Ten’s
-and Unit’s)
 4 tentdigits-sd/1 Image of
 A Single-
 Digit
