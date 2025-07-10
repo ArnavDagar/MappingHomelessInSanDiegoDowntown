@@ -161,8 +161,12 @@ images till we get a count information and one of 3 classes – Individual, Tent
 
 ## 5. Program to process each month’s data maps
 
-This section describes the python script used to process each month’s data maps. The
-script assumes the following directory structure (root directories and subdirectories).
+This section describes the python script used to process each month’s data maps. 
+The code is contained in the jupyter notebook:
+July_2025_MLBased_Homelessness_Report.ipynb
+
+Copy this notebook and the other folder described below and modify first few lines of cell 4 to ensure that path for your structure is correct.
+This notebook assumes the following directory structure (root directories and subdirectories).
 
 #### PROJECT DIRECTORY STRUCTURE
 ```
