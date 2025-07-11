@@ -1,5 +1,11 @@
 # Mapping Homelessness in San Diego Downtown
 
+#### Arnav Dagar
+#### Arnav.Dagar.sd@gmail.com
+#### July 10th, 2025
+
+&nbsp;
+
 This project converts San Diego Downtown Homeless Survey data into GIS format. Since 2015, Downtown San Diego Partnership [(DSDP)](https://downtownsandiego.org/clean-and-safe/unhoused-care/) has been conducting an observational count of the unsheltered homeless in Downtown San Diego on paper maps. DSDP manually annotates te counts, tallies the results and uploads pdf of the scans of the paper maps with tabulated data on their website. This project uses computer vision and deep learning methods to read count information from paper maps, geotag and map the counts on a GIS map for each month for all the 10 regions of downtown San Diego for further visualization and analysis.
 
 ## 1. Raw Data
